@@ -20,6 +20,7 @@
 # 15. left_wrist            32. right_foot_index
 # 16. right_wrist
 
+from pickle import NONE
 import rospy
 import roslib
 
@@ -39,7 +40,7 @@ import os
 import sys
 
 import cv2
-from cv_bridge import CvBridge
+from cv_bridge import CvBridge, CvBridgeError
 
 import mediapipe as mp
 
@@ -66,10 +67,56 @@ class LandmarkDetectionClass(object):
         self.landmarkcoords.y = array.array('f',(0 for f in range(0,33)))
         self.landmarkcoords.vis = array.array('f',(0 for f in range(0,33)))
 
+        self.debug_pub = rospy.Publisher('debug_img', Image, queue_size=1)
+        self.br = CvBridge()
+        self.image = NONE
+
+
         rospy.loginfo("Landmark Detector Initialized")
 
-    def callback(self, ros_data):
-        i=0
+    def callback(self, ros_data, image_encoding='bgr8'):
+        # self.image = self.br.imgmsg_to_cv2(ros_data)
+        
+
+        try:
+            self.image = self.br.imgmsg_to_cv2(ros_data, image_encoding)
+
+
+        except CvBridgeError as e:
+            if "[16UC1] is not a color format" in str(e):
+                raise CvBridgeError(
+                    "You may be trying to use a Image method " +
+                    "(Subscriber, Publisher, conversion) on a depth image" +
+                    " message. Original exception: " + str(e))
+            raise e
+
+        
+        with mp_pose.Pose(
+            static_image_mode=True,
+            model_complexity=2,
+            enable_segmentation=True,
+            min_detection_confidence=0.5,
+            min_tracking_confidence=0.5) as pose:
+
+                self.image = cv2.cvtColor(self.image, cv2.COLOR_BGR2RGB)
+                results = pose.process(self.image)
+                self.image = cv2.cvtColor(self.image, cv2.COLOR_RGB2BGR)
+                mp_drawing.draw_landmarks(
+                    self.image,
+                    results.pose_landmarks,
+                    mp_pose.POSE_CONNECTIONS,
+                    landmark_drawing_spec=mp_drawing_styles.get_default_pose_landmarks_style())
+
+                self.image = cv2.cvtColor(self.image, cv2.COLOR_RGB2BGR)
+                debug_img =  self.br.cv2_to_imgmsg(self.image, 'rgb8')
+                self.debug_pub.publish(debug_img)
+
+
+
+        
+
+    def imageGetter(self):
+        return self.image
         
 
 
@@ -79,10 +126,23 @@ def main():
     rate = rospy.Rate(50)
     landmarkObject = LandmarkDetectionClass()
 
+    while not rospy.is_shutdown():
+        rospy.loginfo_once("Entering ROS Loop")
+
+        # np_img = np.array(landmarkObject.image)
+        # print(np_img.shape)
+        
+        # image = landmarkObject.br.cv2_to_imgmsg(landmarkObject.image, 'bgr8')
+        # landmarkObject.image_pub.publish(image)
+        rate.sleep()
     #rospy.sleep(1)
     # landmarkObject.calculateLandmarks()
 
-    rospy.spin()
+    try:
+        rospy.spin()
+    except KeyboardInterrupt:
+        print ("Shutting down Landmark Detector Node")
+    cv2.destroyAllWindows()
 
 if __name__ == '__main__':
     main()

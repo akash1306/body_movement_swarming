@@ -16,6 +16,7 @@ find_package(catkin REQUIRED COMPONENTS
   rospy
   sensor_msgs
   std_msgs
+  message_generation
 )
 find_package(Eigen3 REQUIRED)
 set(Eigen_INCLUDE_DIRS ${EIGEN3_INCLUDE_DIRS})
@@ -54,11 +55,10 @@ set(Eigen_LIBRARIES ${Eigen_LIBRARIES})
 ##   * add every package in MSG_DEP_SET to generate_messages(DEPENDENCIES ...)
 
 ## Generate messages in the 'msg' folder
-# add_message_files(
-#   FILES
-#   Message1.msg
-#   Message2.msg
-# )
+add_message_files(
+  FILES
+  landmark.msg
+)
 
 ## Generate services in the 'srv' folder
 # add_service_files(
@@ -75,11 +75,11 @@ set(Eigen_LIBRARIES ${Eigen_LIBRARIES})
 # )
 
 ## Generate added messages and services with any dependencies listed here
-# generate_messages(
-#   DEPENDENCIES
-#   geometry_msgs   nav_msgs   sensor_msgs   std_msgs
-#   mrs_msgs
-# )
+generate_messages(
+  DEPENDENCIES
+  geometry_msgs   nav_msgs   sensor_msgs   std_msgs
+  mrs_msgs
+)
 
 ################################################
 ## Declare ROS dynamic reconfigure parameters ##

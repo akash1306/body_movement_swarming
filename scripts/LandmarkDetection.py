@@ -58,24 +58,25 @@ class LandmarkDetectionClass(object):
         self.landmarkpub = rospy.Publisher('/landmarkCoord' , landmark, \
                                             queue_size=10)
         self.subscriber = rospy.Subscriber("/uav7/cam_out", Image, \
-                                            self.callback,  queue_size = 1)
+                                            self.Callback,  queue_size = 1)
         self.image_pub = rospy.Publisher("/output/image_raw", Image, \
                                             queue_size=10)
+        # self.timer = rospy.Timer(rospy.Duration(0.03), self.TimerCallback)
 
         self.landmarkcoords = landmark()
         self.landmarkcoords.x = array.array('f',(0 for f in range(0,33)))
         self.landmarkcoords.y = array.array('f',(0 for f in range(0,33)))
         self.landmarkcoords.vis = array.array('f',(0 for f in range(0,33)))
 
-        self.debug_pub = rospy.Publisher('debug_img', Image, queue_size=1)
+        self.debug_pub = rospy.Publisher('debug_img', Image, queue_size=10)
         self.br = CvBridge()
         self.image = NONE
 
 
         rospy.loginfo("Landmark Detector Initialized")
 
-    def callback(self, ros_data, image_encoding='bgr8'):
-        # self.image = self.br.imgmsg_to_cv2(ros_data)
+    def Callback(self, ros_data, image_encoding='bgr8'):
+
         
 
         try:
@@ -90,13 +91,42 @@ class LandmarkDetectionClass(object):
                     " message. Original exception: " + str(e))
             raise e
 
-        
+        self.PoseEstimator()
+
+
+    def TimerCallback(self, timer):
+        rospy.loginfo_once("Entering Timer Callback")
+        if not self.image==NONE:
+            
+            with mp_pose.Pose(
+                static_image_mode=True,
+                model_complexity=1,
+                enable_segmentation=True,
+                min_detection_confidence=0.3,
+                min_tracking_confidence=0.7) as pose:
+
+                    # self.image = cv2.cvtColor(self.image, cv2.COLOR_BGR2RGB)
+                    results = pose.process(self.image)
+                    # self.image = cv2.cvtColor(self.image, cv2.COLOR_RGB2BGR)
+                    mp_drawing.draw_landmarks(
+                        self.image,
+                        results.pose_landmarks,
+                        mp_pose.POSE_CONNECTIONS,
+                        landmark_drawing_spec=mp_drawing_styles.get_default_pose_landmarks_style())
+
+                    self.image = cv2.cvtColor(self.image, cv2.COLOR_RGB2BGR)
+                    debug_img =  self.br.cv2_to_imgmsg(self.image, 'bgr8')
+                    self.debug_pub.publish(debug_img)
+
+
+
+    def PoseEstimator(self):
         with mp_pose.Pose(
-            static_image_mode=True,
-            model_complexity=2,
-            enable_segmentation=True,
-            min_detection_confidence=0.5,
-            min_tracking_confidence=0.5) as pose:
+            static_image_mode=False,
+            model_complexity=1,
+            enable_segmentation=False,
+            min_detection_confidence=0.3,
+            min_tracking_confidence=0.7) as pose:
 
                 self.image = cv2.cvtColor(self.image, cv2.COLOR_BGR2RGB)
                 results = pose.process(self.image)
@@ -112,11 +142,6 @@ class LandmarkDetectionClass(object):
                 self.debug_pub.publish(debug_img)
 
 
-
-        
-
-    def imageGetter(self):
-        return self.image
         
 
 

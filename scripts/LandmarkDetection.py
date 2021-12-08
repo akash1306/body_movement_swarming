@@ -64,7 +64,7 @@ class LandmarkDetectionClass(object):
                                             queue_size=10)
         self.subscriber = rospy.Subscriber("/uav7/cam_out", Image, \
                                             self.Callback,  queue_size = 10)
-        self.image_pub = rospy.Publisher("/output/image_raw", Image, \
+        self.image_pub = rospy.Publisher("/mediapipe/image_raw", Image, \
                                             queue_size=10)
         # self.timer = rospy.Timer(rospy.Duration(0.03), self.TimerCallback)
 
@@ -73,22 +73,14 @@ class LandmarkDetectionClass(object):
         self.landmarkcoords.y = array.array('f',(0 for f in range(0,33)))
         self.landmarkcoords.vis = array.array('f',(0 for f in range(0,33)))
 
-        self.debug_pub = rospy.Publisher('debug_img', Image, queue_size=10)
-        
-        
-
-
         rospy.loginfo("Landmark Detector Initialized")
 
     def Callback(self, ros_data, image_encoding='bgr8'):
   
 
         try:
-            # lol=ros_data
             self.image = self.br.imgmsg_to_cv2(ros_data, image_encoding)
             
-
-
         except CvBridgeError as e:
             if "[16UC1] is not a color format" in str(e):
                 raise CvBridgeError(
@@ -100,29 +92,29 @@ class LandmarkDetectionClass(object):
         # self.PoseEstimator()
 
 
-    def TimerCallback(self, timer):
-        rospy.loginfo_once("Entering Timer Callback")
-        if not self.image==NONE:
+    # def TimerCallback(self, timer):
+    #     rospy.loginfo_once("Entering Timer Callback")
+    #     if not self.image==NONE:
             
-            with mp_pose.Pose(
-                static_image_mode=False,
-                model_complexity=1,
-                enable_segmentation=True,
-                min_detection_confidence=0.6,
-                min_tracking_confidence=0.6) as pose:
+    #         with mp_pose.Pose(
+    #             static_image_mode=False,
+    #             model_complexity=1,
+    #             enable_segmentation=True,
+    #             min_detection_confidence=0.6,
+    #             min_tracking_confidence=0.6) as pose:
 
-                    # self.image = cv2.cvtColor(self.image, cv2.COLOR_BGR2RGB)
-                    results = pose.process(self.image)
-                    # self.image = cv2.cvtColor(self.image, cv2.COLOR_RGB2BGR)
-                    mp_drawing.draw_landmarks(
-                        self.image,
-                        results.pose_landmarks,
-                        mp_pose.POSE_CONNECTIONS,
-                        landmark_drawing_spec=mp_drawing_styles.get_default_pose_landmarks_style())
+    #                 # self.image = cv2.cvtColor(self.image, cv2.COLOR_BGR2RGB)
+    #                 results = pose.process(self.image)
+    #                 # self.image = cv2.cvtColor(self.image, cv2.COLOR_RGB2BGR)
+    #                 mp_drawing.draw_landmarks(
+    #                     self.image,
+    #                     results.pose_landmarks,
+    #                     mp_pose.POSE_CONNECTIONS,
+    #                     landmark_drawing_spec=mp_drawing_styles.get_default_pose_landmarks_style())
 
-                    self.image = cv2.cvtColor(self.image, cv2.COLOR_RGB2BGR)
-                    debug_img =  self.br.cv2_to_imgmsg(self.image, 'rgb8')
-                    self.debug_pub.publish(debug_img)
+    #                 self.image = cv2.cvtColor(self.image, cv2.COLOR_RGB2BGR)
+    #                 debug_img =  self.br.cv2_to_imgmsg(self.image, 'rgb8')
+    #                 self.debug_pub.publish(debug_img)
 
 
 
@@ -131,9 +123,9 @@ class LandmarkDetectionClass(object):
         # success, self.image = self.cap.read()
         # self.image.flags.writeable = False
         imageRGB = cv2.cvtColor(self.image, cv2.COLOR_BGR2RGB)
-        cv2.imshow("Lol", imageRGB)
         results = pose.process(imageRGB)
         imageBGR = cv2.cvtColor(imageRGB, cv2.COLOR_RGB2BGR)
+
         mp_drawing.draw_landmarks(
             imageBGR,
             results.pose_landmarks,
@@ -141,8 +133,10 @@ class LandmarkDetectionClass(object):
             landmark_drawing_spec=mp_drawing_styles.get_default_pose_landmarks_style())
         # cv2.imshow("Mediapipe Pose", self.image)
         image_2BGR = cv2.cvtColor(imageBGR, cv2.COLOR_RGB2BGR)
-        debug_img =  self.br.cv2_to_imgmsg(image_2BGR, 'rgb8')
-        self.debug_pub.publish(debug_img)
+        landnmark_img =  self.br.cv2_to_imgmsg(image_2BGR, 'rgb8')
+        self.image_pub.publish(landnmark_img)
+
+        # landnmark_img, imageRGB, imageBGR, image_2BGR = NONE
 
 
         

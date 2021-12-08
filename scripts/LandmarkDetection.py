@@ -63,7 +63,7 @@ class LandmarkDetectionClass(object):
         self.landmarkpub = rospy.Publisher('/landmarkCoord' , landmark, \
                                             queue_size=10)
         self.subscriber = rospy.Subscriber("/uav7/cam_out", Image, \
-                                            self.Callback,  queue_size = 10)
+                                            self.Callback)
         self.image_pub = rospy.Publisher("/mediapipe/image_raw", Image, \
                                             queue_size=10)
         # self.timer = rospy.Timer(rospy.Duration(0.03), self.TimerCallback)
@@ -163,14 +163,13 @@ def main():
         min_tracking_confidence=0.7) as pose:
 
         while not rospy.is_shutdown():
-            # if landmarkObject.image==NONE:
-            #     continue
-            try: 
-                rospy.loginfo_once("Entering while")
-                landmarkObject.PoseEstimator(pose)
-    
-            except: 
-                print("Mediapose Node Exception")
+            if landmarkObject.image==NONE:
+                continue
+        
+            rospy.loginfo_once("Entering while")
+            landmarkObject.PoseEstimator(pose)
+
+
             if cv2.waitKey(5) & 0xFF == 27:
                     break
             rate.sleep()

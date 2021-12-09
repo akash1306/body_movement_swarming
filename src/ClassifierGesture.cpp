@@ -5,6 +5,8 @@ ClassifierGestureClass::ClassifierGestureClass(ros::NodeHandle* nodehandle):
     ROS_INFO("Classifier Class Engaged");
     landmark_subscriber = nh.subscribe("/mediapipe/image_raw", 100, 
                             &ClassifierGestureClass::landmarkCallback, this);
+    timer_pub_gesture = nh.createTimer(ros::Rate(50.0), 
+                                &ClassifierGestureClass::callbackTimer, this);
 
 
 }

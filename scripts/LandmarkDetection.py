@@ -110,7 +110,8 @@ class LandmarkDetectionClass(object):
     #                     self.image,
     #                     results.pose_landmarks,
     #                     mp_pose.POSE_CONNECTIONS,
-    #                     landmark_drawing_spec=mp_drawing_styles.get_default_pose_landmarks_style())
+    #                     landmark_drawing_spec=\
+    #                      mp_drawing_styles.get_default_pose_landmarks_style())
 
     #                 self.image = cv2.cvtColor(self.image, cv2.COLOR_RGB2BGR)
     #                 debug_img =  self.br.cv2_to_imgmsg(self.image, 'rgb8')
@@ -130,7 +131,8 @@ class LandmarkDetectionClass(object):
             imageBGR,
             results.pose_landmarks,
             mp_pose.POSE_CONNECTIONS,
-            landmark_drawing_spec=mp_drawing_styles.get_default_pose_landmarks_style())
+            landmark_drawing_spec= \
+                        mp_drawing_styles.get_default_pose_landmarks_style())
         # cv2.imshow("Mediapipe Pose", self.image)
         image_2BGR = cv2.cvtColor(imageBGR, cv2.COLOR_RGB2BGR)
         landnmark_img =  self.br.cv2_to_imgmsg(image_2BGR, 'rgb8')

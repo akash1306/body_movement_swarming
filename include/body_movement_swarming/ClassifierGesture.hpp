@@ -16,6 +16,7 @@
 #include <message_filters/subscriber.h>
 #include <message_filters/synchronizer.h>
 #include <message_filters/sync_policies/approximate_time.h>
+#include<std_msgs/Int32.h>
 
 
 #include <string>
@@ -34,6 +35,7 @@ class ClassifierGestureClass
 
     private:
         ros::Subscriber landmark_subscriber;
+        ros::Subscriber debugsub;
         int gesture_buffer[200]; 
         double header_buffer[200];
         int buffer_index;
@@ -42,9 +44,12 @@ class ClassifierGestureClass
         int zero_state_counter;
         int one_state_counter;
         int two_state_counter;
-        int gesture_to_publish;
+        std_msgs::Int32 gesture_to_publish;
 
         ros::NodeHandle nh;
+        std_msgs::Int32 tempdata;
+        void Callback(const std_msgs::Int32& ros_data);
+
         
         void landmarkCallback(const body_movement_swarming::landmark& ros_data);
         body_movement_swarming::landmark landmark_data;

@@ -64,8 +64,8 @@ class LandmarkDetectionClass(object):
                                             queue_size=10)
         self.subscriber = rospy.Subscriber("/uav7/cam_out", Image, \
                                             self.Callback)
-        self.image_pub = rospy.Publisher("/mediapipe/image_raw", Image, \
-                                            queue_size=10)
+        self.image_pub = rospy.Publisher("/mediapipe/image_raw/compressed", \
+                                                Image, queue_size=10)
         # self.timer = rospy.Timer(rospy.Duration(0.03), self.TimerCallback)
 
         self.landmarkcoords = landmark()
@@ -89,7 +89,7 @@ class LandmarkDetectionClass(object):
                     " message. Original exception: " + str(e))
             raise e
 
-        # self.PoseEstimator()
+
 
 
     # def TimerCallback(self, timer):

@@ -19,6 +19,8 @@
 
 
 #include <string>
+#include<stdio.h>
+#include <algorithm>
 
 // Custom Message
 #include <body_movement_swarming/landmark.h>
@@ -32,7 +34,15 @@ class ClassifierGestureClass
 
     private:
         ros::Subscriber landmark_subscriber;
-        boost::array<int,100> gesture_buffer; //it needs to be a 2d array as i need to store 
+        int gesture_buffer[200]; 
+        double header_buffer[200];
+        int buffer_index;
+        int gesture_number;
+        double current_time;
+        int zero_state_counter;
+        int one_state_counter;
+        int two_state_counter;
+        int gesture_to_publish;
 
         ros::NodeHandle nh;
         

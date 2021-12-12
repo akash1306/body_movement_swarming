@@ -25,6 +25,7 @@
 
 // Custom Message
 #include <body_movement_swarming/landmark.h>
+#include <body_movement_swarming/IntStamped.h>
 
 
 class ClassifierGestureClass
@@ -35,7 +36,7 @@ class ClassifierGestureClass
 
     private:
         ros::Subscriber landmark_subscriber;
-        ros::Subscriber debugsub;
+        ros::Subscriber raw_gesture_pub;
         int gesture_buffer[200]; 
         double header_buffer[200];
         int buffer_index;
@@ -44,17 +45,15 @@ class ClassifierGestureClass
         int zero_state_counter;
         int one_state_counter;
         int two_state_counter;
-        std_msgs::Int32 gesture_to_publish;
+        int last_seq;
+        body_movement_swarming::IntStamped filtered_gesture;
 
         ros::NodeHandle nh;
-        std_msgs::Int32 tempdata;
-        void Callback(const std_msgs::Int32& ros_data);
+    
+        void Callback(const body_movement_swarming::IntStamped& ros_data);
+        body_movement_swarming::IntStamped incoming_gesture;
 
         
-        void landmarkCallback(const body_movement_swarming::landmark& ros_data);
-        body_movement_swarming::landmark landmark_data;
-
-
         void                callbackTimer(const ros::TimerEvent& event);
         ros::Timer          timer_pub_gesture;
         ros::Publisher      gesture_pub;

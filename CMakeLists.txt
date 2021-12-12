@@ -58,6 +58,7 @@ set(Eigen_LIBRARIES ${Eigen_LIBRARIES})
 add_message_files(
   FILES
   landmark.msg
+  IntStamped.msg
 )
 
 ## Generate services in the 'srv' folder
@@ -209,8 +210,12 @@ include_directories(
 # if(TARGET ${PROJECT_NAME}-test)
 #   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
 # endif()
-add_executable(GestureClassifier src/ClassifierGesture.cpp)
-target_link_libraries(GestureClassifier ${catkin_LIBRARIES}
+add_executable(ClassifierGesture src/ClassifierGesture.cpp)
+target_link_libraries(ClassifierGesture ${catkin_LIBRARIES}
+${Eigen_LIBRARIES}
+)
+add_executable(StaticGestures src/StaticGestures.cpp)
+target_link_libraries(StaticGestures ${catkin_LIBRARIES}
 ${Eigen_LIBRARIES}
 )
 ## Add folders to be run by python nosetests

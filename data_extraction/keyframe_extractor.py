@@ -1,54 +1,177 @@
-import cv2
-import mediapipe as mp
+#!/usr/bin/env python3
+
+# Landmarks
+
+# 0. nose                   17. left_pinky
+# 1. left_eye_inner         18. right_pinky
+# 2. left_eve               19. left_index
+# 3. left_eye_outer         20. right_index
+# 4. right_eye_inner        21. left_thumb
+# 5. right_eye              22. right_thumb
+# 6. right_eye_outer        23. left_hip
+# 7. left_ear               24. right_hip
+# 8. right_ear              25. left_knee
+# 9. mouth_left             26. right_knee
+# 10. mouth_right           27. left_ankle
+# 11. left_shoulder         28. right_ankle
+# 12. right_shoulder        29. left_heel
+# 13. left_elbow            30. right_heel
+# 14. right_elbow           31. left_foot index
+# 15. left_wrist            32. right_foot_index
+# 16. right_wrist
+
+from pickle import NONE
+import rospy
+import roslib
+
+from mrs_msgs.msg import ControlManagerDiagnostics
+from mrs_msgs.msg import Float64Stamped
+from mrs_msgs.msg import VelocityReferenceStamped
+from mrs_msgs.msg import ReferenceStamped
+from std_msgs.msg import Float64
+from std_msgs.msg import Int16
+from body_movement_swarming.msg import landmark
+
+import math
+import array
 import numpy as np
 import time
-from mpl_toolkits.mplot3d import Axes3D
-from pathlib import Path
+import os
+import sys
+
+import cv2
+from cv_bridge import CvBridge, CvBridgeError
+
+import mediapipe as mp
+
+
+# ROS Messages
+from sensor_msgs.msg import CompressedImage, Image
+
 mp_drawing = mp.solutions.drawing_utils
 mp_drawing_styles = mp.solutions.drawing_styles
 mp_pose = mp.solutions.pose
 
-# For static images:
-images_absolute_paths = Path("/home/akash/Downloads/akash_dataset/akash_dataset/extracted_images/12_with_vest").glob("*.jpg")
-IMAGE_FILES = [str(p) for p in images_absolute_paths]
-BG_COLOR = (192, 192, 192) # gray
-with mp_pose.Pose(
-    static_image_mode=True,
-    model_complexity=2,
-    enable_segmentation=True,
-    min_detection_confidence=0.7) as pose:
-  for idx, file in enumerate(IMAGE_FILES):
-    image = cv2.imread(file)
-    image_height, image_width, _ = image.shape
-    # Convert the BGR image to RGB before processing.
-    results = pose.process(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
+class KeyframextractClass(object):
 
-    if not results.pose_landmarks:
-      continue
-    print(
-        f'Nose coordinates: ('
-        f'{results.pose_landmarks.landmark[mp_pose.PoseLandmark.NOSE].x * image_width}, '
-        f'{results.pose_landmarks.landmark[mp_pose.PoseLandmark.NOSE].y * image_height})'
-    )
+    def __init__(self):
 
-    annotated_image = image.copy()
-    # Draw segmentation on the image.
-    # To improve segmentation around boundaries, consider applying a joint
-    # bilateral filter to "results.segmentation_mask" with "image".
-    condition = np.stack((results.segmentation_mask,) * 3, axis=-1) > 0.1
-    bg_image = np.zeros(image.shape, dtype=np.uint8)
-    bg_image[:] = BG_COLOR
-    annotated_image = np.where(condition, annotated_image, bg_image)
-    # Draw pose landmarks on the image.
-    mp_drawing.draw_landmarks(
-        annotated_image,
-        results.pose_landmarks,
-        mp_pose.POSE_CONNECTIONS,
-        landmark_drawing_spec=mp_drawing_styles.get_default_pose_landmarks_style())
-    cv2.imwrite('/home/akash/Downloads/mediapipeimages/annotated_image' + str(idx) + '.png', annotated_image)
-    # Plot pose world landmarks.
-    # mp_drawing.plot_landmarks(
-    #     results.pose_world_landmarks, mp_pose.POSE_CONNECTIONS)
+        self.br = CvBridge()
+        self.image = NONE
+        # self.cap = cv2.VideoCapture(0)
 
-    # cv2.imshow("Lol", annotated_image)
-    # time.sleep(0.5)
+        self.landmarkpub = rospy.Publisher('/landmarkCoord' , landmark, \
+                                            queue_size=10)
+        self.subscriber = rospy.Subscriber("/uav7/cam_out", Image, \
+                                            self.Callback)
+        self.image_pub = rospy.Publisher("/mediapipe/image_raw/compressed", \
+                                                Image, queue_size=10)
+        # self.timer = rospy.Timer(rospy.Duration(0.03), self.TimerCallback)
+
+        self.landmarkcoords = landmark()
+        self.landmarkcoords.x = array.array('f',(0 for f in range(0,33)))
+        self.landmarkcoords.y = array.array('f',(0 for f in range(0,33)))
+        self.landmarkcoords.vis = array.array('f',(0 for f in range(0,33)))
+
+        rospy.loginfo("Landmark Detector Initialized")
+
+    def Callback(self, ros_data, image_encoding='bgr8'):
+  
+
+        try:
+            self.image_header = ros_data.header
+            self.image = self.br.imgmsg_to_cv2(ros_data, image_encoding)
+            
+        except CvBridgeError as e:
+            if "[16UC1] is not a color format" in str(e):
+                raise CvBridgeError(
+                    "You may be trying to use a Image method " +
+                    "(Subscriber, Publisher, conversion) on a depth image" +
+                    " message. Original exception: " + str(e))
+            raise e
+
+
+
+
+
+
+    def PoseEstimator(self, pose):
+
+        # success, self.image = self.cap.read()
+        # self.image.flags.writeable = False
+        imagefiller = self.image
+        imageRGB = cv2.cvtColor(imagefiller, cv2.COLOR_BGR2RGB)
+        results = pose.process(imageRGB)
+        imageBGR = cv2.cvtColor(imageRGB, cv2.COLOR_RGB2BGR)
+        if results.pose_landmarks:
+
+          i=0
+          for landname in mp_pose.PoseLandmark:
+              self.landmarkcoords.name.append(str(landname))
+
+              self.landmarkcoords.x[i] = results.pose_landmarks.landmark[landname].x 
+              self.landmarkcoords.y[i] = results.pose_landmarks.landmark[landname].y
+              self.landmarkcoords.vis[i] = results.pose_landmarks.landmark[landname].visibility 
+              i+=1
+          current_image_time = self.image_header.stamp
+          self.landmarkcoords.header.frame_id = "Human"
+          self.landmarkcoords.header.stamp = current_image_time
+
+          mp_drawing.draw_landmarks(
+              imageBGR,
+              results.pose_landmarks,
+              mp_pose.POSE_CONNECTIONS,
+              landmark_drawing_spec= \
+                          mp_drawing_styles.get_default_pose_landmarks_style())
+          # cv2.imshow("Mediapipe Pose", self.image)
+          image_2BGR = cv2.cvtColor(imageBGR, cv2.COLOR_RGB2BGR)
+          landnmark_img =  self.br.cv2_to_imgmsg(image_2BGR, 'rgb8')
+          self.image_pub.publish(landnmark_img)
+          print (self.landmarkcoords.name.index('PoseLandmark.LEFT_FOOT_INDEX'))
+
+
+        # landnmark_img, imageRGB, imageBGR, image_2BGR = NONE
+
+
+        
+
+
+
+def main():
+    rospy.init_node('Landmark_Detector', anonymous= True)
+    rate = rospy.Rate(50)
+    keyframeObject = KeyframextractClass()
+
+    
+    with mp_pose.Pose(
+        static_image_mode=False,
+        model_complexity=2,
+        enable_segmentation=True,
+        min_detection_confidence=0.5,
+        min_tracking_confidence=0.7) as pose:
+
+        while not rospy.is_shutdown():
+            if keyframeObject.image==NONE:
+                continue
+        
+            rospy.loginfo_once("Entering while")
+            keyframeObject.PoseEstimator(pose)
+
+
+            if cv2.waitKey(5) & 0xFF == 27:
+                    break
+            rate.sleep()
+
+
+
+    try:
+        rospy.spin()
+    except KeyboardInterrupt:
+        print ("Shutting down Landmark Detector Node")
+    cv2.destroyAllWindows()
+
+if __name__ == '__main__':
+    main()
+
+
+

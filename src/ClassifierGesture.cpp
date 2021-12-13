@@ -1,10 +1,6 @@
 #include<ClassifierGesture.hpp>
 
-using std::cout; using std::endl;
-using std::chrono::duration_cast;
-using std::chrono::milliseconds;
-using std::chrono::seconds;
-using std::chrono::system_clock;
+
 
 ClassifierGestureClass::ClassifierGestureClass(ros::NodeHandle* nodehandle):
                                                                 nh(*nodehandle){
@@ -13,7 +9,7 @@ ClassifierGestureClass::ClassifierGestureClass(ros::NodeHandle* nodehandle):
     timer_pub_gesture = nh.createTimer(ros::Rate(60.0), 
                                 &ClassifierGestureClass::callbackTimer, this);
 
-    raw_gesture_pub = nh.subscribe("/uav1/raw_gesture", 50, 
+    raw_gesture_sub = nh.subscribe("/uav1/raw_gesture", 50, 
                             &ClassifierGestureClass::Callback, this);
 
     gesture_pub = nh.advertise<body_movement_swarming::IntStamped>(
@@ -39,7 +35,8 @@ void ClassifierGestureClass::callbackTimer(const ros::TimerEvent& event){
     {
         return;
     }
-    
+    filtered_gesture.header.stamp = incoming_gesture.header.stamp;
+    filtered_gesture.header.frame_id = incoming_gesture.header.frame_id;
     last_seq = incoming_gesture.header.seq;
     zero_state_counter = 0;
     one_state_counter = 0;
@@ -47,6 +44,10 @@ void ClassifierGestureClass::callbackTimer(const ros::TimerEvent& event){
     // current_time = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count()/1000.0;
     current_time = incoming_gesture.header.stamp.sec + 
                         incoming_gesture.header.stamp.nsec / (float)pow(10,9);
+    if(buffer_index>0)
+    {
+        std::cout<<current_time - header_buffer[0]<<std::endl;
+    }
     
     gesture_number = incoming_gesture.int_data;
 
@@ -56,18 +57,18 @@ void ClassifierGestureClass::callbackTimer(const ros::TimerEvent& event){
         std::fill(std::begin(header_buffer), std::begin(header_buffer), -1);
         buffer_index = 0;
     }
-    if(buffer_index < 199)
+    if(buffer_index < 99)
     {
         header_buffer[buffer_index] = current_time;
         gesture_buffer[buffer_index] = gesture_number;
         buffer_index++;
     }
-    else if(buffer_index == 199)
+    else if(buffer_index == 99)
     {
             memmove(&header_buffer[0], &header_buffer[1], 
-                                            199*sizeof(header_buffer[0]));
+                                            99*sizeof(header_buffer[0]));
             memmove(&gesture_buffer[0], &gesture_buffer[1], 
-                                            199*sizeof(gesture_buffer[0]));
+                                            99*sizeof(gesture_buffer[0]));
 
             header_buffer[buffer_index] = current_time;
             gesture_buffer[buffer_index] = gesture_number;
@@ -75,9 +76,9 @@ void ClassifierGestureClass::callbackTimer(const ros::TimerEvent& event){
     }
 
 
-    for(int i=199; i>=0; i--)
+    for(int i=99; i>=0; i--)
     {
-        if(header_buffer[199] - header_buffer[i]>2.0)
+        if(header_buffer[99] - header_buffer[i]>1.0)
         {
             break;
         }

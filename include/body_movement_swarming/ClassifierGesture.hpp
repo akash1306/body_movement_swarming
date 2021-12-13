@@ -35,10 +35,9 @@ class ClassifierGestureClass
 
 
     private:
-        ros::Subscriber landmark_subscriber;
-        ros::Subscriber raw_gesture_pub;
-        int gesture_buffer[200]; 
-        double header_buffer[200];
+        ros::Subscriber raw_gesture_sub;
+        int gesture_buffer[100]; 
+        double header_buffer[100];
         int buffer_index;
         int gesture_number;
         double current_time;

@@ -59,7 +59,7 @@ class LandmarkDetectionClass(object):
         self.br = CvBridge()
         self.image = NONE
         self.previous_sequence = -1
-        # self.cap = cv2.VideoCapture(0)
+        self.cap = cv2.VideoCapture(0)
 
         self.landmarkpub = rospy.Publisher('/landmarkCoord' , landmark, \
                                             queue_size=10)
@@ -81,7 +81,7 @@ class LandmarkDetectionClass(object):
 
         try:
             self.image_header = ros_data.header
-            self.image = self.br.imgmsg_to_cv2(ros_data, image_encoding)
+            # self.image = self.br.imgmsg_to_cv2(ros_data, image_encoding)
             
         except CvBridgeError as e:
             if "[16UC1] is not a color format" in str(e):
@@ -95,8 +95,8 @@ class LandmarkDetectionClass(object):
 
     def PoseEstimator(self, pose):
 
-        # success, self.image = self.cap.read()
-        # self.image.flags.writeable = False
+        success, self.image = self.cap.read()
+        self.image.flags.writeable = False
         imagefiller = self.image
         current_image_time = self.image_header.stamp
         imageRGB = cv2.cvtColor(imagefiller, cv2.COLOR_BGR2RGB)
@@ -160,8 +160,8 @@ def main():
         min_tracking_confidence=0.6) as pose:
 
         while not rospy.is_shutdown():
-            if landmarkObject.image==NONE:
-                continue
+            # if landmarkObject.image==NONE:
+            #     continue
         
             rospy.loginfo_once("Entering while")
             landmarkObject.PoseEstimator(pose)

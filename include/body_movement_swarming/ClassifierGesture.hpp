@@ -45,6 +45,7 @@ class ClassifierGestureClass
         int one_state_counter;
         int two_state_counter;
         int last_seq;
+
         body_movement_swarming::IntStamped filtered_gesture;
 
         ros::NodeHandle nh;

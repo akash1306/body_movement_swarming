@@ -19,14 +19,16 @@ ClassifierGestureClass::ClassifierGestureClass(ros::NodeHandle* nodehandle):
     last_seq = -1;
     std::fill(std::begin(gesture_buffer), std::begin(gesture_buffer), -1);
     std::fill(std::begin(header_buffer), std::begin(header_buffer), -1);
-
+   
 
 }
 
 void ClassifierGestureClass::Callback(const body_movement_swarming::IntStamped&
                                                                      ros_data)
 {
+    
     incoming_gesture = ros_data;
+    
 }
 
 void ClassifierGestureClass::callbackTimer(const ros::TimerEvent& event){
@@ -42,12 +44,8 @@ void ClassifierGestureClass::callbackTimer(const ros::TimerEvent& event){
     one_state_counter = 0;
     two_state_counter = 0;
     // current_time = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count()/1000.0;
-    current_time = incoming_gesture.header.stamp.sec + 
-                        incoming_gesture.header.stamp.nsec / (float)pow(10,9);
-    if(buffer_index>0)
-    {
-        std::cout<<current_time - header_buffer[0]<<std::endl;
-    }
+    current_time = incoming_gesture.header.stamp.sec;
+   
     
     gesture_number = incoming_gesture.int_data;
 
@@ -78,10 +76,10 @@ void ClassifierGestureClass::callbackTimer(const ros::TimerEvent& event){
 
     for(int i=99; i>=0; i--)
     {
-        if(header_buffer[99] - header_buffer[i]>1.0)
-        {
-            break;
-        }
+        // if(header_buffer[99] - header_buffer[i]>1.0)
+        // {
+        //     break;
+        // }
         
 
         if(gesture_buffer[i] == 1)
@@ -112,7 +110,7 @@ void ClassifierGestureClass::callbackTimer(const ros::TimerEvent& event){
     {
         filtered_gesture.int_data = 0;
     }
-
+    std::cout<<current_time<<std::endl;
     gesture_pub.publish(filtered_gesture);
     // tempdata.data = 0;
 

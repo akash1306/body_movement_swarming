@@ -4,9 +4,9 @@ GestureControlClass::GestureControlClass(ros::NodeHandle* nodehandle):nh(*
                                                                     nodehandle)
 {
     ROS_INFO("In Controller");
-    gps_subscriber = nh.subscribe("/uav1/odometry/odom_gps",1, 
+    gps_subscriber = nh.subscribe("/uav62/odometry/odom_gps",1, 
                                     &GestureControlClass::odomCallback, this);
-    gesture_sub = nh.subscribe("/uav1/gesture_filtered",1, 
+    gesture_sub = nh.subscribe("/uav62/gesture_filtered",1, 
                                 &GestureControlClass::gestureCallback, this);
 }
 
@@ -24,7 +24,7 @@ void GestureControlClass::gestureCallback(const
 void GestureControlClass::servicestarter()
 {
     ros::ServiceClient client1 = nh.serviceClient<mrs_msgs::Vec4>(
-                                                "/uav1/control_manager/goto");
+                                                "/uav62/control_manager/goto");
 
     if(filtered_gesture.int_data == 1)
     {
@@ -65,7 +65,7 @@ int main(int argc, char** argv)
 
     ros::Rate r(10);
     while (ros::ok()){
-    ros::service::waitForService("/uav1/control_manager/goto",10); 
+    ros::service::waitForService("/uav62/control_manager/goto",10); 
     gestureObject.servicestarter();
     
     

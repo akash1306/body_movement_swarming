@@ -83,7 +83,7 @@ TempActionClass::TempActionClass(ros::NodeHandle* nodehandle):
     landmarksub = nh.subscribe("/landmarkCoord", 50, 
                             &TempActionClass::Callback, this);
 
-    timer_pub_gesture = nh.createTimer(ros::Duration(5), 
+    timer_pub_gesture = nh.createTimer(ros::Duration(3), 
                                 &TempActionClass::callbackTimer, this);
 
     last_seq = -1;

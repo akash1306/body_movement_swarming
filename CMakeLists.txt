@@ -222,6 +222,10 @@ add_executable(GestureController src/GestureController.cpp)
 target_link_libraries(GestureController ${catkin_LIBRARIES}
 ${Eigen_LIBRARIES}
 )
+add_executable(TempAction src/tempaction.cpp)
+target_link_libraries(TempAction ${catkin_LIBRARIES}
+${Eigen_LIBRARIES}
+)
 ## Add folders to be run by python nosetests
 # catkin_add_nosetests(test)
 include_directories(

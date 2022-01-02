@@ -52,19 +52,20 @@ mp_drawing = mp.solutions.drawing_utils
 mp_drawing_styles = mp.solutions.drawing_styles
 mp_pose = mp.solutions.pose
 
-class KeyframextractClass(object):
+class keyFrameClass(object):
 
     def __init__(self):
 
         self.br = CvBridge()
         self.image = NONE
+        self.previous_sequence = -1
         # self.cap = cv2.VideoCapture(0)
 
         self.landmarkpub = rospy.Publisher('/landmarkCoord' , landmark, \
                                             queue_size=10)
-        self.subscriber = rospy.Subscriber("/uav7/cam_out", Image, \
+        self.subscriber = rospy.Subscriber("/uav62/rgbd/color/image_raw", Image, \
                                             self.Callback)
-        self.image_pub = rospy.Publisher("/mediapipe/image_raw/compressed", \
+        self.image_pub = rospy.Publisher("/mediapipe/image_raw", \
                                                 Image, queue_size=10)
         # self.timer = rospy.Timer(rospy.Duration(0.03), self.TimerCallback)
 
@@ -92,43 +93,45 @@ class KeyframextractClass(object):
 
 
 
-
-
-
     def PoseEstimator(self, pose):
 
         # success, self.image = self.cap.read()
         # self.image.flags.writeable = False
         imagefiller = self.image
+        current_image_time = self.image_header.stamp
         imageRGB = cv2.cvtColor(imagefiller, cv2.COLOR_BGR2RGB)
         results = pose.process(imageRGB)
         imageBGR = cv2.cvtColor(imageRGB, cv2.COLOR_RGB2BGR)
+        if self.image_header.seq == self.previous_sequence:
+            return
+        self.previous_sequence = self.image_header.seq
+
         if results.pose_landmarks:
 
-          i=0
-          for landname in mp_pose.PoseLandmark:
-              self.landmarkcoords.name.append(str(landname))
+            i=0
+            for landname in mp_pose.PoseLandmark:
+                self.landmarkcoords.name.append(str(landname))
 
-              self.landmarkcoords.x[i] = results.pose_landmarks.landmark[landname].x 
-              self.landmarkcoords.y[i] = results.pose_landmarks.landmark[landname].y
-              self.landmarkcoords.vis[i] = results.pose_landmarks.landmark[landname].visibility 
-              i+=1
-          current_image_time = self.image_header.stamp
-          self.landmarkcoords.header.frame_id = "Human"
-          self.landmarkcoords.header.stamp = current_image_time
+                self.landmarkcoords.x[i] = results.pose_landmarks.landmark[landname].x 
+                self.landmarkcoords.y[i] = results.pose_landmarks.landmark[landname].y
+                self.landmarkcoords.vis[i] = results.pose_landmarks.landmark[landname].visibility 
+                i+=1
+            
+            self.landmarkcoords.header.frame_id = "Human"
+            self.landmarkcoords.header.stamp = current_image_time
 
-          mp_drawing.draw_landmarks(
-              imageBGR,
-              results.pose_landmarks,
-              mp_pose.POSE_CONNECTIONS,
-              landmark_drawing_spec= \
-                          mp_drawing_styles.get_default_pose_landmarks_style())
-          # cv2.imshow("Mediapipe Pose", self.image)
-          image_2BGR = cv2.cvtColor(imageBGR, cv2.COLOR_RGB2BGR)
-          landnmark_img =  self.br.cv2_to_imgmsg(image_2BGR, 'rgb8')
-          self.image_pub.publish(landnmark_img)
-          print (self.landmarkcoords.name.index('PoseLandmark.LEFT_FOOT_INDEX'))
-
+            mp_drawing.draw_landmarks(
+                imageBGR,
+                results.pose_landmarks,
+                mp_pose.POSE_CONNECTIONS,
+                landmark_drawing_spec= \
+                            mp_drawing_styles.get_default_pose_landmarks_style())
+            # cv2.imshow("Mediapipe Pose", self.image)
+            image_2BGR = cv2.cvtColor(imageBGR, cv2.COLOR_RGB2BGR)
+            landnmark_img =  self.br.cv2_to_imgmsg(image_2BGR, 'rgb8')
+            self.image_pub.publish(landnmark_img)
+            self.landmarkpub.publish(self.landmarkcoords)
+            self.landmarkcoords.name = []
 
         # landnmark_img, imageRGB, imageBGR, image_2BGR = NONE
 
@@ -140,22 +143,28 @@ class KeyframextractClass(object):
 def main():
     rospy.init_node('Landmark_Detector', anonymous= True)
     rate = rospy.Rate(50)
-    keyframeObject = KeyframextractClass()
+    landmarkObject = keyFrameClass()
 
+    # while not rospy.is_shutdown():
+    #     rospy.loginfo_once("Entering ROS Loop")
+
+    #     rate.sleep()
+    # #rospy.sleep(1)
+    # landmarkObject.calculateLandmarks()
     
     with mp_pose.Pose(
         static_image_mode=False,
-        model_complexity=2,
+        model_complexity=1,
         enable_segmentation=True,
         min_detection_confidence=0.5,
-        min_tracking_confidence=0.7) as pose:
+        min_tracking_confidence=0.6) as pose:
 
         while not rospy.is_shutdown():
-            if keyframeObject.image==NONE:
+            if landmarkObject.image==NONE:
                 continue
         
             rospy.loginfo_once("Entering while")
-            keyframeObject.PoseEstimator(pose)
+            landmarkObject.PoseEstimator(pose)
 
 
             if cv2.waitKey(5) & 0xFF == 27:

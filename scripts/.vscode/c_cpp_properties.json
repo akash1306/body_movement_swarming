@@ -1,0 +1,54 @@
+{
+  "configurations": [
+    {
+      "browse": {
+        "databaseFilename": "${workspaceFolder}/.vscode/browse.vc.db",
+        "limitSymbolsToIncludedHeaders": false
+      },
+      "includePath": [
+        "/home/akash/workspace/devel/include/**",
+        "/home/akash/mrs_workspace/devel/include/**",
+        "/opt/ros/noetic/include/**",
+        "/home/akash/workspace/src/bluefox2/include/**",
+        "/home/akash/workspace/src/body_movement_swarming/include/**",
+        "/home/akash/workspace/src/camera_base/include/**",
+        "/home/akash/workspace/src/example_ros_packages/ros_packages/example_ros_pluginlib/example_manager/include/**",
+        "/home/akash/workspace/src/flocking_behavior/include/**",
+        "/home/akash/workspace/src/formationpkg/include/**",
+        "/home/akash/workspace/src/gazebo-human-gesture/include/**",
+        "/home/akash/workspace/src/gesture_flocking/include/**",
+        "/home/akash/mrs_workspace/src/uav_core/ros_packages/mavros/libmavconn/include/**",
+        "/home/akash/mrs_workspace/src/simulation/ros_packages/mavlink_sitl_gazebo/include/**",
+        "/home/akash/mrs_workspace/src/uav_core/ros_packages/mavros/mavros/include/**",
+        "/home/akash/mrs_workspace/src/uav_core/ros_packages/mavros/mavros_msgs/include/**",
+        "/home/akash/workspace/src/mediapipe/include/**",
+        "/home/akash/workspace/src/misc/include/**",
+        "/home/akash/mrs_workspace/src/simulation/ros_packages/mrs_gazebo_common_resources/include/**",
+        "/home/akash/mrs_workspace/src/uav_core/ros_packages/mrs_lib/include/**",
+        "/home/akash/mrs_workspace/src/uav_core/ros_packages/mrs_rviz_plugins/include/**",
+        "/home/akash/mrs_workspace/src/uav_core/ros_packages/mrs_uav_controllers/include/**",
+        "/home/akash/mrs_workspace/src/uav_core/ros_packages/mrs_uav_general/include/**",
+        "/home/akash/mrs_workspace/src/uav_core/ros_packages/mrs_uav_managers/include/**",
+        "/home/akash/mrs_workspace/src/uav_core/ros_packages/mrs_uav_odometry/include/**",
+        "/home/akash/mrs_workspace/src/uav_core/ros_packages/mrs_uav_status/include/**",
+        "/home/akash/mrs_workspace/src/uav_core/ros_packages/mrs_uav_trackers/include/**",
+        "/home/akash/mrs_workspace/src/uav_core/ros_packages/mrs_uav_trajectory_generation/include/**",
+        "/home/akash/mrs_workspace/src/uav_core/ros_packages/thirdparty/nlopt_ros/include/**",
+        "/home/akash/mrs_workspace/src/uav_core/ros_packages/thirdparty/nodelet_core/nodelet/include/**",
+        "/home/akash/mrs_workspace/src/uav_core/ros_packages/thirdparty/nodelet_core/nodelet_topic_tools/include/**",
+        "/home/akash/mrs_workspace/src/uav_core/ros_packages/mavros/test_mavros/include/**",
+        "/home/akash/workspace/src/uvdar_core/include/**",
+        "/home/akash/workspace/src/uvdar_gazebo_plugin/include/**",
+        "/home/akash/workspace/src/example_ros_packages/ros_packages/example_ros_vision/include/**",
+        "/home/akash/workspace/src/example_ros_packages/ros_packages/example_ros_uav/include/**",
+        "/usr/include/**"
+      ],
+      "name": "ROS",
+      "intelliSenseMode": "gcc-x64",
+      "compilerPath": "/usr/bin/gcc",
+      "cStandard": "gnu11",
+      "cppStandard": "c++14"
+    }
+  ],
+  "version": 4
+}

@@ -97,9 +97,9 @@ class keyFrameClass(object):
 
         # success, self.image = self.cap.read()
         # self.image.flags.writeable = False
-        imagefiller = self.image
+        self.imagefiller = self.image
         current_image_time = self.image_header.stamp
-        imageRGB = cv2.cvtColor(imagefiller, cv2.COLOR_BGR2RGB)
+        imageRGB = cv2.cvtColor(self.imagefiller, cv2.COLOR_BGR2RGB)
         results = pose.process(imageRGB)
         imageBGR = cv2.cvtColor(imageRGB, cv2.COLOR_RGB2BGR)
         if self.image_header.seq == self.previous_sequence:
@@ -135,6 +135,17 @@ class keyFrameClass(object):
 
         # landnmark_img, imageRGB, imageBGR, image_2BGR = NONE
 
+    def calculateAngle(self, firstPointx, firstPointy, midPointx, midPointy, endPointx, endPointy):
+
+        landmarkAngle = math.degrees(math.atan2(endPointy - midPointy, endPointx - midPointx) - math.atan2(firstPointy - midPointy , firstPointx - midPointx))
+        landmarkAngle = abs(landmarkAngle)
+
+        if landmarkAngle >180:
+            landmarkAngle = 360 - landmarkAngle
+
+
+        return landmarkAngle
+
 
         
 
@@ -151,13 +162,13 @@ def main():
     #     rate.sleep()
     # #rospy.sleep(1)
     # landmarkObject.calculateLandmarks()
-    
+    iloop = 1100
     with mp_pose.Pose(
         static_image_mode=False,
-        model_complexity=1,
+        model_complexity=2,
         enable_segmentation=True,
         min_detection_confidence=0.5,
-        min_tracking_confidence=0.6) as pose:
+        min_tracking_confidence=0.5) as pose:
 
         while not rospy.is_shutdown():
             if landmarkObject.image==NONE:
@@ -165,6 +176,20 @@ def main():
         
             rospy.loginfo_once("Entering while")
             landmarkObject.PoseEstimator(pose)
+            leftshoulder = landmarkObject.calculateAngle(\
+                                            landmarkObject.landmarkcoords.x[15],\
+                                            landmarkObject.landmarkcoords.y[15],\
+                                            landmarkObject.landmarkcoords.x[11],\
+                                            landmarkObject.landmarkcoords.y[11],\
+                                            landmarkObject.landmarkcoords.x[12],\
+                                            landmarkObject.landmarkcoords.y[12],\
+                                            )
+            directory = os.path.dirname("/home/akash/Dataset")
+            save_name = str(iloop) + ".jpg"
+            if(leftshoulder>160 and leftshoulder<205):
+                cv2.imwrite(save_name, landmarkObject.imagefiller)
+                iloop+=1
+
 
 
             if cv2.waitKey(5) & 0xFF == 27:

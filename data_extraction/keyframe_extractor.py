@@ -23,6 +23,7 @@
 from pickle import NONE
 import rospy
 import roslib
+import csv
 
 from mrs_msgs.msg import ControlManagerDiagnostics
 from mrs_msgs.msg import Float64Stamped
@@ -63,11 +64,14 @@ class keyFrameClass(object):
 
         self.landmarkpub = rospy.Publisher('/landmarkCoord' , landmark, \
                                             queue_size=10)
-        self.subscriber = rospy.Subscriber("/uav62/rgbd/color/image_raw", Image, \
-                                            self.Callback)
+        self.subscriber = rospy.Subscriber("/uav62/rgbd/color/image_raw", \
+                                                        Image, self.Callback)
         self.image_pub = rospy.Publisher("/mediapipe/image_raw", \
                                                 Image, queue_size=10)
         # self.timer = rospy.Timer(rospy.Duration(0.03), self.TimerCallback)
+        rows,cols = (3,33)
+        self.csvlandmark = [[0 for i in range(cols)] for j in range(rows)]
+
 
         self.landmarkcoords = landmark()
         self.landmarkcoords.x = array.array('f',(0 for f in range(0,33)))
@@ -112,9 +116,19 @@ class keyFrameClass(object):
             for landname in mp_pose.PoseLandmark:
                 self.landmarkcoords.name.append(str(landname))
 
-                self.landmarkcoords.x[i] = results.pose_landmarks.landmark[landname].x 
-                self.landmarkcoords.y[i] = results.pose_landmarks.landmark[landname].y
-                self.landmarkcoords.vis[i] = results.pose_landmarks.landmark[landname].visibility 
+                self.landmarkcoords.x[i] = \
+                            results.pose_landmarks.landmark[landname].x 
+                self.landmarkcoords.y[i] = \
+                            results.pose_landmarks.landmark[landname].y
+                self.landmarkcoords.vis[i] = \
+                            results.pose_landmarks.landmark[landname].visibility 
+
+                self.csvlandmark[0][i] = \
+                            results.pose_landmarks.landmark[landname].x 
+                self.csvlandmark[1][i] = \
+                            results.pose_landmarks.landmark[landname].y
+                self.csvlandmark[2][i] = \
+                            results.pose_landmarks.landmark[landname].z 
                 i+=1
             
             self.landmarkcoords.header.frame_id = "Human"
@@ -135,13 +149,16 @@ class keyFrameClass(object):
 
         # landnmark_img, imageRGB, imageBGR, image_2BGR = NONE
 
-    def calculateAngle(self, firstPointx, firstPointy, midPointx, midPointy, endPointx, endPointy):
+    def calculateAngle(self, firstPointx, firstPointy, midPointx, midPointy, \
+                                                        endPointx, endPointy):
 
-        landmarkAngle = math.degrees(math.atan2(endPointy - midPointy, endPointx - midPointx) - math.atan2(firstPointy - midPointy , firstPointx - midPointx))
-        landmarkAngle = abs(landmarkAngle)
+        landmarkAngle = math.degrees(math.atan2(endPointy - midPointy, \
+                    endPointx - midPointx) - math.atan2(firstPointy - midPointy\
+                                                     , firstPointx - midPointx))
+        # landmarkAngle = abs(landmarkAngle)
 
-        if landmarkAngle >180:
-            landmarkAngle = 360 - landmarkAngle
+        # if landmarkAngle >180:
+        #     landmarkAngle = 360 - landmarkAngle
 
 
         return landmarkAngle
@@ -162,7 +179,8 @@ def main():
     #     rate.sleep()
     # #rospy.sleep(1)
     # landmarkObject.calculateLandmarks()
-    iloop = 1100
+    iloop = 580
+    file_separator = ','
     with mp_pose.Pose(
         static_image_mode=False,
         model_complexity=2,
@@ -176,18 +194,55 @@ def main():
         
             rospy.loginfo_once("Entering while")
             landmarkObject.PoseEstimator(pose)
+            
             leftshoulder = landmarkObject.calculateAngle(\
-                                            landmarkObject.landmarkcoords.x[15],\
-                                            landmarkObject.landmarkcoords.y[15],\
-                                            landmarkObject.landmarkcoords.x[11],\
-                                            landmarkObject.landmarkcoords.y[11],\
-                                            landmarkObject.landmarkcoords.x[12],\
-                                            landmarkObject.landmarkcoords.y[12],\
-                                            )
-            directory = os.path.dirname("/home/akash/Dataset")
+                                        landmarkObject.landmarkcoords.x[15],\
+                                        landmarkObject.landmarkcoords.y[15],\
+                                        landmarkObject.landmarkcoords.x[11],\
+                                        landmarkObject.landmarkcoords.y[11],\
+                                        landmarkObject.landmarkcoords.x[12],\
+                                        landmarkObject.landmarkcoords.y[12],\
+                                        )
+            directory_ver = os.path.dirname("/home/akash/Pose_Dataset/left_ver")
+            directory_hor = os.path.dirname("/home/akash/Pose_Dataset/left_hor")
+
             save_name = str(iloop) + ".jpg"
+            if(leftshoulder>225 and leftshoulder<236):
+                ver_name = os.path.join(directory_ver, save_name)
+                cv2.imwrite(ver_name, landmarkObject.imagefiller)
+
+                with open('pose_csvfile.csv', 'a', newline='') as csv_file:
+                    row = []
+                    for k in range(0,33):
+                        row.append(landmarkObject.csvlandmark[0][k])
+                        row.append(landmarkObject.csvlandmark[1][k])
+                        row.append(landmarkObject.csvlandmark[2][k])
+                    row.insert(0, save_name)
+                    row.insert(1, "left_ver")
+                    writer = csv.writer(csv_file, delimiter=file_separator,\
+                                                    quoting=csv.QUOTE_MINIMAL)
+                    writer.writerow(row)                       
+
+                iloop+=1
+
+
             if(leftshoulder>160 and leftshoulder<205):
-                cv2.imwrite(save_name, landmarkObject.imagefiller)
+                hor_name = os.path.join(directory_hor, save_name)
+                cv2.imwrite(hor_name, landmarkObject.imagefiller)
+
+                with open('pose_csvfile.csv', 'a', newline='') as csv_file:
+                    row = []
+                    for k in range(0,33):
+                        row.append(landmarkObject.csvlandmark[0][k])
+                        row.append(landmarkObject.csvlandmark[1][k])
+                        row.append(landmarkObject.csvlandmark[2][k])
+                    row.insert(0, save_name)
+                    row.insert(1, "left_hor")
+                    writer = csv.writer(csv_file, delimiter=file_separator,\
+                                                    quoting=csv.QUOTE_MINIMAL)
+                    writer.writerow(row)  
+
+                
                 iloop+=1
 
 

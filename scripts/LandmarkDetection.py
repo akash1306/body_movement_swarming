@@ -59,11 +59,13 @@ class LandmarkDetectionClass(object):
         self.br = CvBridge()
         self.image = NONE
         self.previous_sequence = -1
+        self.total_frames = 0.0
+        self.succ_frames = 0.0
         # self.cap = cv2.VideoCapture(0)
 
         self.landmarkpub = rospy.Publisher('/landmarkCoord' , landmark, \
                                             queue_size=10)
-        self.subscriber = rospy.Subscriber("/uav62/rgbd/color/image_raw", Image, \
+        self.subscriber = rospy.Subscriber("/uav2/something", Image, \
                                             self.Callback)
         self.image_pub = rospy.Publisher("/mediapipe/image_raw", \
                                                 Image, queue_size=10)
@@ -109,6 +111,7 @@ class LandmarkDetectionClass(object):
         if results.pose_landmarks:
 
             i=0
+            self.succ_frames += 1.0
             for landname in mp_pose.PoseLandmark:
                 self.landmarkcoords.name.append(str(landname))
 
@@ -164,7 +167,9 @@ def main():
                 continue
         
             rospy.loginfo_once("Entering while")
+            landmarkObject.total_frames +=1.0
             landmarkObject.PoseEstimator(pose)
+            print (landmarkObject.succ_frames / landmarkObject.total_frames)
 
 
             if cv2.waitKey(5) & 0xFF == 27:

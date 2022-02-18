@@ -65,7 +65,7 @@ class LandmarkDetectionClass(object):
 
         self.landmarkpub = rospy.Publisher('/landmarkCoord' , landmark, \
                                             queue_size=10)
-        self.subscriber = rospy.Subscriber("/uav2/something", Image, \
+        self.subscriber = rospy.Subscriber("/uav1/rs_d435/color/image_raw", Image, \
                                             self.Callback)
         self.image_pub = rospy.Publisher("/mediapipe/image_raw", \
                                                 Image, queue_size=10)

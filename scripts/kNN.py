@@ -734,8 +734,8 @@ class LandmarkDetectionClass(object):
             # cv2.imshow("Mediapipe Pose", self.image)
             image_2BGR = cv2.cvtColor(imageBGR, cv2.COLOR_RGB2BGR)
             landnmark_img =  self.br.cv2_to_imgmsg(image_2BGR, 'rgb8')
+            self.image_pub.publish(landnmark_img)
             
-            self.landmarkpub.publish(self.landmarkcoords)
             self.landmarkcoords.name = []
             return results.pose_landmarks
 
@@ -779,7 +779,7 @@ def main():
     #     rate.sleep()
     # #rospy.sleep(1)
     # landmarkObject.calculateLandmarks()
-    
+
     with mp_pose.Pose(
         static_image_mode=False,
         model_complexity=1,
@@ -790,12 +790,14 @@ def main():
         while not rospy.is_shutdown():
             if landmarkObject.image==NONE:
                 continue
-        
+
             rospy.loginfo_once("Entering while")
             landmarkObject.total_frames +=1.0
             pose_landmarks = landmarkObject.PoseEstimator(pose_tracker)
 
             if pose_landmarks is not None:
+                print("Chal jaa bhai")
+
                 mp_drawing.draw_landmarks(
                     image=landmarkObject.image,
                     landmark_list=pose_landmarks,
@@ -828,14 +830,15 @@ def main():
                 # Don't update the counter presuming that person is 'frozen'. Just
                 # take the latest repetitions count.
                 repetitions_count = repetition_counter.n_repeats     
+            print(repetitions_count)
             landnmark_img =  landmarkObject.br.cv2_to_imgmsg(landmarkObject.imageRGB, 'rgb8')
-            landmarkObject.image_pub.publish(landnmark_img)
-            output_frame = pose_classification_visualizer(
-                frame=landmarkObject.image,
-                pose_classification=pose_classification,
-                pose_classification_filtered=pose_classification_filtered,
-                repetitions_count=repetitions_count)
-            landmarkObject.image_pub.publish(output_frame)
+            # landmarkObject.image_pub.publish(landnmark_img)
+            # output_frame = pose_classification_visualizer(
+            #     frame=landmarkObject.image,
+            #     pose_classification=pose_classification,
+            #     pose_classification_filtered=pose_classification_filtered,
+            #     repetitions_count=repetitions_count)
+            # landmarkObject.image_pub.publish(output_frame)
             if cv2.waitKey(5) & 0xFF == 27:
                     pose_tracker.close()
                     break

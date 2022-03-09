@@ -154,7 +154,7 @@ void TempActionClass::Callback(const body_movement_swarming::landmark&
 
     if(right_hor && right_mid && right_ver)
     {
-        gesture_outgoing.int_data = 1;
+        gesture_outgoing.int_data = 4;
     }
     else if(left_hor && left_mid && left_ver)
     {

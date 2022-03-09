@@ -55,8 +55,7 @@ set(Eigen_LIBRARIES ${Eigen_LIBRARIES})
 ##   * add every package in MSG_DEP_SET to generate_messages(DEPENDENCIES ...)
 
 ## Generate messages in the 'msg' folder
-add_message_files(
-  FILES
+add_message_files(DIRECTORY msg FILES
   landmark.msg
   IntStamped.msg
 )
@@ -78,8 +77,7 @@ add_message_files(
 ## Generate added messages and services with any dependencies listed here
 generate_messages(
   DEPENDENCIES
-  geometry_msgs   nav_msgs   sensor_msgs   std_msgs
-  mrs_msgs
+  geometry_msgs   nav_msgs   sensor_msgs   std_msgs mrs_msgs
 )
 
 ################################################
@@ -113,8 +111,8 @@ generate_messages(
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
  INCLUDE_DIRS include/body_movement_swarming
- LIBRARIES body_movement_swarming
- CATKIN_DEPENDS geometry_msgs nav_msgs roscpp rospy sensor_msgs std_msgs mrs_msgs mrs_lib
+ # LIBRARIES body_movement_swarming
+ CATKIN_DEPENDS geometry_msgs nav_msgs roscpp rospy sensor_msgs std_msgs mrs_msgs mrs_lib message_runtime
  DEPENDS Eigen
 )
 

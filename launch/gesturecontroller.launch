@@ -1,0 +1,16 @@
+<launch>
+  
+  <arg name="uav_name" default="$(optenv UAV_NAME uav)"/>
+  <arg name="camera_topic" default="$(arg uav_name)/rgbd/color/image_raw"/>
+
+
+    <node name="GestureController" pkg="body_movement_swarming" type="GestureController" output="screen" args="">
+        <rosparam file="$(find body_movement_swarming)/tmux_scripts/experiments_swarming/custom_configs/landmarkconfig.yaml" command="load" />
+        <remap from="~global_pos_in" to="mavros/global_position/global" />
+        <param name="camera_topic" value="$(arg camera_topic)"/>
+        <remap from="~arming_out" to="mavros/cmd/arming" />
+        <remap from="~mode_out" to="mavros/set_mode" />
+        <remap from="~waypoint_push" to="mavros/mission/push" />
+    </node>
+
+</launch>

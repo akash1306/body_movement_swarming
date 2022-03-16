@@ -83,7 +83,7 @@ TempActionClass::TempActionClass(ros::NodeHandle* nodehandle):
     landmarksub = nh.subscribe("/landmarkCoord", 50, 
                             &TempActionClass::Callback, this);
 
-    timer_pub_gesture = nh.createTimer(ros::Duration(3), 
+    timer_pub_gesture = nh.createTimer(ros::Duration(2), 
                                 &TempActionClass::callbackTimer, this);
 
     last_seq = -1;
@@ -100,6 +100,7 @@ void TempActionClass::callbackTimer(const ros::TimerEvent& event)
     right_ver = false;
     right_hor = false;
     right_mid = false;
+    gesture_outgoing.int_data = 0;
 }
 
 void TempActionClass::Callback(const body_movement_swarming::landmark& 
@@ -109,9 +110,10 @@ void TempActionClass::Callback(const body_movement_swarming::landmark&
 
     if(incoming_landmarks.header.seq == last_seq)
     {
+        std::cout <<"Same Seq" <<std::endl;
         return;
     }
-
+    last_seq = incoming_landmarks.header.seq;
     double left_hand_angle = CalculateAngle(incoming_landmarks.x[15],
                                         incoming_landmarks.y[15],
                                         incoming_landmarks.x[11],
@@ -151,12 +153,19 @@ void TempActionClass::Callback(const body_movement_swarming::landmark&
     {
         right_mid = true;
     }
+    bool right_hand = right_hor && right_mid && right_ver;
+    bool left_hand = left_hor && left_mid && left_ver;
 
-    if(right_hor && right_mid && right_ver)
+
+    if(right_hand && left_hand)
+    {
+        gesture_outgoing.int_data = 0;
+    }
+    else if(right_hand)
     {
         gesture_outgoing.int_data = 4;
     }
-    else if(left_hor && left_mid && left_ver)
+    else if(left_hand)
     {
         gesture_outgoing.int_data = 2;
     }

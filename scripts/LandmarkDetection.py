@@ -171,7 +171,7 @@ def main():
             rospy.loginfo_once("Entering while")
             landmarkObject.total_frames +=1.0
             landmarkObject.PoseEstimator(pose)
-            print (landmarkObject.succ_frames / landmarkObject.total_frames)
+            # print (landmarkObject.succ_frames / landmarkObject.total_frames)
 
 
             if cv2.waitKey(5) & 0xFF == 27:

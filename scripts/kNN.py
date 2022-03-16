@@ -747,10 +747,11 @@ class LandmarkDetectionClass(object):
 
 
 def main():
-    rospy.init_node('kNN Classifier', anonymous= True)
+    rospy.init_node('kNN_Classifier', anonymous= True)
     rate = rospy.Rate(50)
     landmarkObject = LandmarkDetectionClass()
     pose_embedder = FullBodyPoseEmbedder()
+    previous_count = 0
 
     pose_classifier = PoseClassifier(
     pose_samples_folder=landmarkObject.pose_samples_folder,

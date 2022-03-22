@@ -4,9 +4,12 @@ GestureControlClass::GestureControlClass(ros::NodeHandle* nodehandle):nh(*
                                                                     nodehandle)
 {
     ROS_INFO("In Controller");
-    gps_subscriber = nh.subscribe("/uav62/odometry/odom_gps",1, 
+    std::string _uav_name_;
+    mrs_lib::ParamLoader param_loader(nh, "TempAction");
+    param_loader.loadParam("/TempAction/uav_name", _uav_name_);
+    gps_subscriber = nh.subscribe(_uav_name_ + "/odometry/odom_gps",1, 
                                     &GestureControlClass::odomCallback, this);
-    gesture_sub = nh.subscribe("/uav62/gesture_filtered",1, 
+    gesture_sub = nh.subscribe(_uav_name_ + "/gesture_filtered",1, 
                                 &GestureControlClass::gestureCallback, this);
 }
 

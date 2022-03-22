@@ -7,6 +7,7 @@
     <node name="kNN_Classifier" pkg="body_movement_swarming" type="kNN" output="screen" args="">
         <rosparam file="$(find body_movement_swarming)/tmux_scripts/experiments_swarming/custom_configs/landmarkconfig.yaml" command="load" />
         <remap from="~global_pos_in" to="mavros/global_position/global" />
+        <param name="uav_name" value="$(arg uav_name)"/>
         <param name="camera_topic" value="$(arg camera_topic)"/>
         <remap from="~arming_out" to="mavros/cmd/arming" />
         <remap from="~mode_out" to="mavros/set_mode" />

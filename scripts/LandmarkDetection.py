@@ -63,13 +63,14 @@ class LandmarkDetectionClass(object):
         self.succ_frames = 0.0
         # self.cap = cv2.VideoCapture(0)
         _camera_topic_ = rospy.get_param('~camera_topic')
+        _uav_name_ = rospy.get_param('~uav_name')
 
 
-        self.landmarkpub = rospy.Publisher('/landmarkCoord' , landmark, \
+        self.landmarkpub = rospy.Publisher(_uav_name_ + '/landmarkCoord' , landmark, \
                                             queue_size=10)
         self.subscriber = rospy.Subscriber(_camera_topic_, Image, \
                                             self.Callback)
-        self.image_pub = rospy.Publisher("/mediapipe/image_raw", \
+        self.image_pub = rospy.Publisher(_uav_name_ + "/mediapipe/image_raw", \
                                                 Image, queue_size=10)
         # self.timer = rospy.Timer(rospy.Duration(0.03), self.TimerCallback)
 

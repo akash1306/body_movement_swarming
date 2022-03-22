@@ -24,7 +24,7 @@ from mrs_msgs.msg import VelocityReferenceStamped
 from mrs_msgs.msg import ReferenceStamped
 from std_msgs.msg import Float64
 from std_msgs.msg import Int16
-from body_movement_swarming.msg import landmark
+from body_movement_swarming.msg import landmark, IntStamped
 
 import math
 import array
@@ -663,13 +663,18 @@ class LandmarkDetectionClass(object):
         self.video_fps = 25
         self.video_width = 1920
         self.video_width = 1080
+        self.action_code = IntStamped()
         # self.cap = cv2.VideoCapture(0)
+        _camera_topic_ = rospy.get_param('~camera_topic')
+        _uav_name_ = rospy.get_param('~uav_name')
 
-        self.landmarkpub = rospy.Publisher('/landmarkCoord' , landmark, \
+        self.landmarkpub = rospy.Publisher(_uav_name_ + '/landmarkCoord' , landmark, \
                                             queue_size=10)
-        self.subscriber = rospy.Subscriber("uav54/rgbd/color/image_raw", Image, \
+        self.actiontrig = rospy.Publisher(_uav_name_ + "/gesture_filtered" , IntStamped, \
+                                            queue_size=10)
+        self.subscriber = rospy.Subscriber(_camera_topic_, Image, \
                                             self.Callback)
-        self.image_pub = rospy.Publisher("/mediapipe/image_raw", \
+        self.image_pub = rospy.Publisher(_uav_name_ + "/mediapipe/image_raw", \
                                                 Image, queue_size=10)
         # self.timer = rospy.Timer(rospy.Duration(0.03), self.TimerCallback)
 
@@ -685,6 +690,7 @@ class LandmarkDetectionClass(object):
 
         try:
             self.image_header = ros_data.header
+            self.action_code.header = ros_data.header
             self.image = self.br.imgmsg_to_cv2(ros_data, image_encoding)
             
         except CvBridgeError as e:
@@ -832,6 +838,9 @@ def main():
                 # take the latest repetitions count.
                 repetitions_count = repetition_counter.n_repeats     
             print(repetitions_count)
+            landmarkObject.action_code.int_data = 4
+            if repetitions_count == previous_count:
+              landmarkObject.actiontrig.publish(landmarkObject.action_code)
             landnmark_img =  landmarkObject.br.cv2_to_imgmsg(landmarkObject.imageRGB, 'rgb8')
             # landmarkObject.image_pub.publish(landnmark_img)
             # output_frame = pose_classification_visualizer(

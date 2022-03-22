@@ -8,6 +8,7 @@
 #include <nav_msgs/Odometry.h>
 #include <geometry_msgs/PoseStamped.h>
 #include <geometry_msgs/PointStamped.h>
+#include <mrs_lib/param_loader.h>
 #include <mrs_msgs/Vec4.h>
 #include <mrs_msgs/ControlManagerDiagnostics.h>
 #include <mrs_msgs/Float64Stamped.h>

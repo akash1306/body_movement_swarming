@@ -1,5 +1,3 @@
-
-
 #include <ros/ros.h>
 #include <ros/package.h>
 #include <nodelet/nodelet.h>
@@ -76,11 +74,13 @@ TempActionClass::TempActionClass(ros::NodeHandle* nodehandle):
     right_ver = false;
     right_hor = false;
     right_mid = false;
-
+    std::string _uav_name_;
+    mrs_lib::ParamLoader param_loader(nh, "TempAction");
+    param_loader.loadParam("/TempAction/uav_name", _uav_name_);
     ges_pub = nh.advertise<body_movement_swarming::IntStamped>(
-                                                "/uav1/action_gesture", 1);
+                                                _uav_name_ + "/gesture_filtered", 1);
 
-    landmarksub = nh.subscribe("/landmarkCoord", 50, 
+    landmarksub = nh.subscribe(_uav_name_ + "/landmarkCoord", 50, 
                             &TempActionClass::Callback, this);
 
     timer_pub_gesture = nh.createTimer(ros::Duration(2), 

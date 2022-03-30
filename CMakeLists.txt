@@ -16,6 +16,7 @@ find_package(catkin REQUIRED COMPONENTS
   rospy
   sensor_msgs
   std_msgs
+  std_srvs
   message_generation
 )
 find_package(Eigen3 REQUIRED)
@@ -77,7 +78,7 @@ add_message_files(DIRECTORY msg FILES
 ## Generate added messages and services with any dependencies listed here
 generate_messages(
   DEPENDENCIES
-  geometry_msgs   nav_msgs   sensor_msgs   std_msgs mrs_msgs
+  geometry_msgs   nav_msgs   sensor_msgs   std_msgs mrs_msgs  std_srvs
 )
 
 ################################################
@@ -112,7 +113,7 @@ generate_messages(
 catkin_package(
  INCLUDE_DIRS include/body_movement_swarming
  # LIBRARIES body_movement_swarming
- CATKIN_DEPENDS geometry_msgs nav_msgs roscpp rospy sensor_msgs std_msgs mrs_msgs mrs_lib message_runtime
+ CATKIN_DEPENDS geometry_msgs std_srvs nav_msgs roscpp rospy sensor_msgs std_msgs mrs_msgs mrs_lib message_runtime
  DEPENDS Eigen
 )
 

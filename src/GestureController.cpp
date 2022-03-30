@@ -4,13 +4,30 @@ GestureControlClass::GestureControlClass(ros::NodeHandle* nodehandle):nh(*
                                                                     nodehandle)
 {
     ROS_INFO("In Controller");
-    std::string _uav_name_;
-    mrs_lib::ParamLoader param_loader(nh, "TempAction");
-    param_loader.loadParam("/TempAction/uav_name", _uav_name_);
+    start_trig = false;
+    
+    mrs_lib::ParamLoader param_loader(nh, "GestureController");
+    param_loader.loadParam("/GestureController/uav_name", _uav_name_);
     gps_subscriber = nh.subscribe(_uav_name_ + "/odometry/odom_gps",1, 
                                     &GestureControlClass::odomCallback, this);
     gesture_sub = nh.subscribe(_uav_name_ + "/gesture_filtered",1, 
                                 &GestureControlClass::gestureCallback, this);
+
+    srv_server_trigger = nh.advertiseService(_uav_name_ + "/start_action_movement", 
+                                    &GestureControlClass::servicetrigcallback, 
+                                    this);
+
+}
+
+bool GestureControlClass::servicetrigcallback([[maybe_unused]] std_srvs::Trigger::Request& 
+                                        req, std_srvs::Trigger::Response& res)
+{
+    ROS_INFO("Started Body Movement Swarming");
+    res.message = "Started Body movement Swarming";
+    res.success = true;
+    start_trig = true;
+    return true;
+    
 }
 
 void GestureControlClass::odomCallback(const nav_msgs::Odometry& message_holder)
@@ -27,7 +44,7 @@ void GestureControlClass::gestureCallback(const
 void GestureControlClass::servicestarter()
 {
     ros::ServiceClient client1 = nh.serviceClient<mrs_msgs::Vec4>(
-                                                "/uav62/control_manager/goto");
+                                                _uav_name_ + "/control_manager/goto");
 
     if(filtered_gesture.int_data == 1)
     {
@@ -62,18 +79,32 @@ int main(int argc, char** argv)
     ros::init(argc, argv, "GestureController"); //node name
 
     ros::NodeHandle nh; // create a node handle; need to pass this to the class constructor
-
+    
     ROS_INFO("main: instantiating an object of type GestureControlClass");
     GestureControlClass gestureObject(&nh);  //instantiate an UAVClass object and pass in pointer to nodehandle for constructor to use
-
     ros::Rate r(10);
-    while (ros::ok()){
+    while(true){
+        ROS_INFO_ONCE("Waiting for Start Trigger");
+        
+        if (gestureObject.start_trig)
+        {
+            
+            break;
+        }
+        
+        ros::spinOnce();
+        r.sleep();
+
+    }
     ros::service::waitForService("/uav62/control_manager/goto",10); 
-    gestureObject.servicestarter();
+    while (ros::ok()){
     
-    
-    ros::spinOnce();
-    r.sleep();
+        
+        gestureObject.servicestarter();
+        
+        
+        ros::spinOnce();
+        r.sleep();
     }
 
     ROS_INFO("main: going into spin; let the callbacks do all the work");

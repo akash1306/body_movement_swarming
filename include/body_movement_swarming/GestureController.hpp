@@ -17,16 +17,20 @@
 #include <Eigen/Dense>
 #include <math.h>
 #include <body_movement_swarming/IntStamped.h>
+#include <std_srvs/Trigger.h>
 
 class GestureControlClass
 {
     public:
         GestureControlClass(ros::NodeHandle* nodehandle);
         void servicestarter();
+        bool start_trig;
+        std::string _uav_name_;
 
     private: 
     nav_msgs::Odometry odomdata;
     ros::Subscriber gps_subscriber;
+    ros::ServiceServer srv_server_trigger;
     boost::array<double,4> goal = {0.0,0.0,0.0,0.0};
     ros::Subscriber gesture_sub;
     body_movement_swarming::IntStamped filtered_gesture;
@@ -35,6 +39,8 @@ class GestureControlClass
 
     void odomCallback(const nav_msgs::Odometry& message_holder); 
     void gestureCallback(const body_movement_swarming::IntStamped& ros_data);
+    bool servicetrigcallback(std_srvs::Trigger::Request& 
+                                        req, std_srvs::Trigger::Response& res);
 
 };
 

@@ -52,11 +52,11 @@ input=(
 '
   'AutoStart' 'waitForRos; roslaunch mrs_uav_general automatic_start.launch custom_config:=./custom_configs/automatic_start.yaml
 '
-  'Landmark Detector' 'waitForRos; roslaunch body_movement_swarming LandmarkDetection.launch
+  'LandmarkDetector' 'waitForRos; roslaunch body_movement_swarming LandmarkDetection.launch
 '
-  'Temp Gestures' 'waitForRos; roslaunch body_movement_swarming tempaction.launch
+  'TempGestures' 'waitForRos; roslaunch body_movement_swarming tempaction.launch
 '
-  'Gesture Controller' 'waitForRos; roslaunch body_movement_swarming gesturecontroller.launch
+  'GestureController' 'waitForRos; roslaunch body_movement_swarming gesturecontroller.launch
 '
   'slow_odom' 'waitForRos; rostopic echo /'"$UAV_NAME"'/odometry/slow_odom
 '

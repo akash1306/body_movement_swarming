@@ -96,7 +96,7 @@ int main(int argc, char** argv)
         r.sleep();
 
     }
-    ros::service::waitForService("/uav62/control_manager/goto",10); 
+    ros::service::waitForService(gestureObject._uav_name_ + "/control_manager/goto",10); 
     while (ros::ok()){
     
         

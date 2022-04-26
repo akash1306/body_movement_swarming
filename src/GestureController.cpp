@@ -38,7 +38,10 @@ void GestureControlClass::odomCallback(const nav_msgs::Odometry& message_holder)
 void GestureControlClass::gestureCallback(const 
                                 body_movement_swarming::IntStamped& ros_data)
 {
+    if (!start_trig)
+      return;
     filtered_gesture = ros_data;
+    servicestarter();
 }
 
 void GestureControlClass::servicestarter()
@@ -70,7 +73,7 @@ void GestureControlClass::servicestarter()
     srv1.request.goal = goal;
     client1.call(srv1);
     filtered_gesture.int_data = 0;
-
+    ROS_INFO("Command Sent");
 }
 
 int main(int argc, char** argv) 
@@ -83,7 +86,8 @@ int main(int argc, char** argv)
     ROS_INFO("main: instantiating an object of type GestureControlClass");
     GestureControlClass gestureObject(&nh);  //instantiate an UAVClass object and pass in pointer to nodehandle for constructor to use
     ros::Rate r(10);
-    while(true){
+    ros::service::waitForService(gestureObject._uav_name_ + "/control_manager/goto",10); 
+    while (ros::ok()){
         ROS_INFO_ONCE("Waiting for Start Trigger");
         
         if (gestureObject.start_trig)
@@ -95,16 +99,6 @@ int main(int argc, char** argv)
         ros::spinOnce();
         r.sleep();
 
-    }
-    ros::service::waitForService(gestureObject._uav_name_ + "/control_manager/goto",10); 
-    while (ros::ok()){
-    
-        
-        gestureObject.servicestarter();
-        
-        
-        ros::spinOnce();
-        r.sleep();
     }
 
     ROS_INFO("main: going into spin; let the callbacks do all the work");

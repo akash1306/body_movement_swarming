@@ -72,8 +72,9 @@ void GestureControlClass::servicestarter()
     mrs_msgs::Vec4 srv1;
     srv1.request.goal = goal;
     client1.call(srv1);
-    filtered_gesture.int_data = 0;
     ROS_INFO("Command Sent");
+    std::cout<<filtered_gesture.int_data<<std::endl;
+    filtered_gesture.int_data = 0;
 }
 
 int main(int argc, char** argv) 

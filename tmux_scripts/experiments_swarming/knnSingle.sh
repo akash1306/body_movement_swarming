@@ -27,7 +27,8 @@ SESSION_NAME=mav
 
 # following commands will be executed first in each window
 # * do NOT put ; at the end
-pre_input="mkdir -p $MAIN_DIR/$PROJECT_NAME; export WORLD_FILE=./world.yaml"
+pre_input="mkdir -p $MAIN_DIR/$PROJECT_NAME; export WORLD_FILE=./camp_world.yaml"
+
 
 # define commands
 # 'name' 'command'
@@ -56,7 +57,7 @@ input=(
 '
   'Gesture Controller' 'waitForRos; roslaunch body_movement_swarming gesturecontroller.launch
 '
-  'Run_Controller' 'waitForRos; history -s rosservice call / '"$UAV_NAME"'/start_action_movement
+  'Run_Controller' 'waitForRos; history -s rosservice call /'"$UAV_NAME"'/start_action_movement
 '
   'MediaPipe_Republish' 'waitForRos; rosrun image_transport republish raw in:=$UAV_NAME/mediapipe/image_raw compressed out:=$UAV_NAME/mediapipe/image_raw/compressed
 '

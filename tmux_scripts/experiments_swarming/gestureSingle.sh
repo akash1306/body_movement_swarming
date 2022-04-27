@@ -58,7 +58,7 @@ input=(
 '
   'GestureController' 'waitForRos; roslaunch body_movement_swarming gesturecontroller.launch
 '
-  'Run_Controller' 'waitForRos; history -s rosservice call / '"$UAV_NAME"'/start_action_movement
+  'Run_Controller' 'waitForRos; history -s rosservice call /'"$UAV_NAME"'/start_action_movement
 '
   'MediaPipe_Republish' 'waitForRos; rosrun image_transport republish raw in:=$UAV_NAME/mediapipe/image_raw compressed out:=$UAV_NAME/mediapipe/image_raw/compressed
 '

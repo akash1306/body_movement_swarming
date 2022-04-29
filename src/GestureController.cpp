@@ -92,6 +92,7 @@ void GestureControlClass::servicestarter()
     client1.call(srv1);
     ROS_INFO("Command Sent");
     std::cout<<filtered_gesture.int_data<<std::endl;
+    std::cout<<srv1.response<<std::endl;
     filtered_gesture.int_data = 0;
 }
 

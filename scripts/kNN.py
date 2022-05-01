@@ -658,7 +658,7 @@ class LandmarkDetectionClass(object):
         self.succ_frames = 0.0
         self.class_name='left_ver'
         self.pose_samples_folder =\
-                 '/home/akash/workspace/src/body_movement_swarming/csvs'
+                 '/home/mrs/akash_workspace/src/body_movement_swarming/csvs'
         self.video_n_frames = 10000
         self.video_fps = 25
         self.video_width = 1920
@@ -754,7 +754,7 @@ class LandmarkDetectionClass(object):
 
 def main():
     rospy.init_node('kNN_Classifier', anonymous= True)
-    rate = rospy.Rate(50)
+    rate = rospy.Rate(25)
     landmarkObject = LandmarkDetectionClass()
     pose_embedder = FullBodyPoseEmbedder()
     previous_count = 0
@@ -838,10 +838,13 @@ def main():
                 # take the latest repetitions count.
                 repetitions_count = repetition_counter.n_repeats     
             print(repetitions_count)
-            landmarkObject.action_code.int_data = 4
-            if repetitions_count == previous_count:
-              landmarkObject.actiontrig.publish(landmarkObject.action_code)
+            landmarkObject.action_code.int_data = 0
+            if repetitions_count >  previous_count:
+                landmarkObject.action_code.int_data = 4
+            landmarkObject.actiontrig.publish(landmarkObject.action_code)
+            previous_count= repetitions_count
             landnmark_img =  landmarkObject.br.cv2_to_imgmsg(landmarkObject.imageRGB, 'rgb8')
+            landmarkObject.action_code.int_data = 0
             # landmarkObject.image_pub.publish(landnmark_img)
             # output_frame = pose_classification_visualizer(
             #     frame=landmarkObject.image,

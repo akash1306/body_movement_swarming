@@ -25,12 +25,17 @@ class GestureControlClass
         GestureControlClass(ros::NodeHandle* nodehandle);
         void servicestarter();
         bool start_trig;
+        bool land_trig;
         std::string _uav_name_;
+        ros::ServiceClient srv_ehover;
+        ros::ServiceClient srv_eland;
 
     private: 
     nav_msgs::Odometry odomdata;
     ros::Subscriber gps_subscriber;
+    ros::ServiceServer srv_land_trigger;
     ros::ServiceServer srv_server_trigger;
+
     boost::array<double,4> goal = {0.0,0.0,0.0,0.0};
     ros::Subscriber gesture_sub;
     body_movement_swarming::IntStamped filtered_gesture;
@@ -41,6 +46,10 @@ class GestureControlClass
     void gestureCallback(const body_movement_swarming::IntStamped& ros_data);
     bool servicetrigcallback(std_srvs::Trigger::Request& 
                                         req, std_srvs::Trigger::Response& res);
+    bool servicelandcallback(std_srvs::Trigger::Request& 
+                                        req, std_srvs::Trigger::Response& res);
+    
+
 
 };
 

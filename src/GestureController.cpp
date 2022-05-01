@@ -5,6 +5,7 @@ GestureControlClass::GestureControlClass(ros::NodeHandle* nodehandle):nh(*
 {
     ROS_INFO("In Controller");
     start_trig = false;
+    land_trig = false;
     
     mrs_lib::ParamLoader param_loader(nh, "GestureController");
     param_loader.loadParam("/GestureController/uav_name", _uav_name_);
@@ -17,6 +18,12 @@ GestureControlClass::GestureControlClass(ros::NodeHandle* nodehandle):nh(*
                                     &GestureControlClass::servicetrigcallback, 
                                     this);
 
+    srv_land_trigger = nh.advertiseService(_uav_name_ + "/end_experiment", 
+                                    &GestureControlClass::servicelandcallback, 
+                                    this);
+    srv_ehover = nh.serviceClient<std_srvs::Trigger>(_uav_name_ + "/control_manager/ehover");
+    srv_eland = nh.serviceClient<std_srvs::Trigger>(_uav_name_ + "/control_manager/eland");
+    
 }
 
 bool GestureControlClass::servicetrigcallback([[maybe_unused]] std_srvs::Trigger::Request& 
@@ -30,6 +37,17 @@ bool GestureControlClass::servicetrigcallback([[maybe_unused]] std_srvs::Trigger
     
 }
 
+bool GestureControlClass::servicelandcallback([[maybe_unused]] std_srvs::Trigger::Request& 
+                                        req, std_srvs::Trigger::Response& res)
+{
+
+    ROS_INFO("Ending Experiment");
+    res.message = "Ending Experiment";
+    res.success = true;
+    land_trig = true;
+    return true;
+    
+}
 void GestureControlClass::odomCallback(const nav_msgs::Odometry& message_holder)
 {
     odomdata = message_holder;
@@ -74,6 +92,7 @@ void GestureControlClass::servicestarter()
     client1.call(srv1);
     ROS_INFO("Command Sent");
     std::cout<<filtered_gesture.int_data<<std::endl;
+    std::cout<<srv1.response<<std::endl;
     filtered_gesture.int_data = 0;
 }
 
@@ -101,7 +120,20 @@ int main(int argc, char** argv)
         r.sleep();
 
     }
-
+    std_srvs::Trigger trig_var;
+    while (ros::ok()){
+        if (gestureObject.land_trig){
+            gestureObject.srv_ehover.call(trig_var);
+            ROS_INFO_ONCE("Triggering Hover");
+            ros::Rate rl(0.2);
+            rl.sleep();
+            gestureObject.srv_eland.call(trig_var);
+            ROS_INFO_ONCE("Triggering Landing");
+            return 0;
+        }
+        ros::spinOnce();
+        r.sleep();
+    }
     ROS_INFO("main: going into spin; let the callbacks do all the work");
     ros::spin();
     return 0;
